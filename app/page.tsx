@@ -32,6 +32,7 @@ export default function Home() {
   } = usePokemon();
   const [typesExpanded, setTypesExpanded] = useState(false);
   const detailsRef = useRef(null);
+  const pokemonListRef = useRef(null);
 
   useEffect(() => {
     fetchPokemon();
@@ -43,6 +44,13 @@ export default function Home() {
       detailsRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [selectedPokemon]);
+
+  // Scroll to Pokémon list when a type is selected on mobile
+  useEffect(() => {
+    if (pokemonListRef.current && window.innerWidth < 1024 && activeCategory) {
+      pokemonListRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [activeCategory]);
 
   const filteredPokemon = pokemon.filter((p) => {
     // Filter by search query
@@ -75,6 +83,10 @@ export default function Home() {
   const handleCategoryChange = (category: string) => {
     soundManager.play("ui-click");
     setActiveCategory(category);
+    // Close the types menu on mobile after selection
+    if (window.innerWidth < 1024) {
+      setTypesExpanded(false);
+    }
   };
 
   const handleTypesToggle = () => {
@@ -181,7 +193,10 @@ export default function Home() {
             </div>
 
             {/* Middle column - Pokémon list */}
-            <div className="border-r border-emerald-500/30 pr-4">
+            <div
+              className="border-r border-emerald-500/30 pr-4"
+              ref={pokemonListRef}
+            >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl">POKÉMON</h2>
                 <div className="text-sm">{filteredPokemon.length} found</div>
