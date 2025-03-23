@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   ChevronDown,
   ChevronRight,
@@ -31,21 +32,35 @@ export default function Home() {
     pokemonTypes,
   } = usePokemon();
   const [typesExpanded, setTypesExpanded] = useState(false);
-  const detailsRef = useRef(null);
-  const pokemonListRef = useRef(null);
+  const [mapLoading, setMapLoading] = useState(true);
+  const detailsRef = useRef<HTMLDivElement | null>(null);
+  const pokemonListRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchPokemon();
   }, [fetchPokemon]);
 
-  // Scroll to details section when a Pokémon is selected on mobile
+  useEffect(() => {
+    if (activeTab === "MAP") {
+      const timer = setTimeout(() => {
+        setMapLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "MAP") {
+      setMapLoading(true);
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     if (selectedPokemon && detailsRef.current && window.innerWidth < 1024) {
       detailsRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [selectedPokemon]);
 
-  // Scroll to Pokémon list when a type is selected on mobile
   useEffect(() => {
     if (pokemonListRef.current && window.innerWidth < 1024 && activeCategory) {
       pokemonListRef.current.scrollIntoView({ behavior: "smooth" });
@@ -53,7 +68,6 @@ export default function Home() {
   }, [activeCategory]);
 
   const filteredPokemon = pokemon.filter((p) => {
-    // Filter by search query
     if (
       searchQuery &&
       !p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -61,7 +75,6 @@ export default function Home() {
       return false;
     }
 
-    // Filter by type
     if (activeCategory !== "All" && !p.types.includes(activeCategory)) {
       return false;
     }
@@ -83,7 +96,6 @@ export default function Home() {
   const handleCategoryChange = (category: string) => {
     soundManager.play("ui-click");
     setActiveCategory(category);
-    // Close the types menu on mobile after selection
     if (window.innerWidth < 1024) {
       setTypesExpanded(false);
     }
@@ -95,11 +107,11 @@ export default function Home() {
   };
 
   const renderTabContent = () => {
-    if (loading) {
+    if (loading && activeTab !== "MAP") {
       return <Loading />;
     }
 
-    if (error) {
+    if (error && activeTab !== "MAP") {
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-emerald-500 font-mono text-center">
@@ -206,7 +218,7 @@ export default function Home() {
                 selectedPokemon={selectedPokemon}
                 onSelectPokemon={(pokemon) => {
                   soundManager.play("ui-select");
-                  soundManager.playPokemonCry(pokemon.id);
+                  soundManager.playPokemonCry(pokemon.name);
                   selectPokemon(pokemon);
                 }}
               />
@@ -216,7 +228,11 @@ export default function Home() {
             <div ref={detailsRef}>
               <h2 className="text-xl mb-4">DETAILS</h2>
               {selectedPokemon ? (
-                <PokemonDetails pokemon={selectedPokemon} />
+                <PokemonDetails
+                  pokemon={selectedPokemon}
+                  allPokemon={pokemon}
+                  onNavigate={selectPokemon}
+                />
               ) : (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-emerald-500/70 text-center">
@@ -279,21 +295,47 @@ export default function Home() {
         return (
           <div className="grid grid-cols-1 gap-6 text-emerald-500 font-mono h-full">
             <div className="text-center py-12">
-              <h2 className="text-2xl mb-6">REGION MAP</h2>
+              <h2 className="text-2xl mb-6">KANTO REGION</h2>
               <div className="border-2 border-emerald-500/50 p-4 max-w-3xl mx-auto">
                 <div className="aspect-video relative bg-emerald-900/20 flex items-center justify-center">
-                  <div className="text-emerald-500/70 text-center">
-                    <p className="mb-4">MAP DATA LOADING...</p>
-                    <p className="text-xs">
-                      SIGNAL LOST - PIP-BOY LOCATION SERVICES UNAVAILABLE
-                    </p>
-                  </div>
+                  {mapLoading ? (
+                    <div className="text-emerald-500/70 text-center">
+                      <p className="mb-4">MAP DATA LOADING...</p>
+                      <p className="text-xs">
+                        ESTABLISHING CONNECTION TO REGIONAL SERVERS
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <div className="absolute inset-0 z-10 overflow-hidden">
+                        <div className="animate-scan-reveal w-full h-full bg-emerald-900/30">
+                          <div className="w-full h-0.5 bg-emerald-500 shadow-[0_0_8px_rgba(72,209,162,0.8)]"></div>
+                        </div>
+                      </div>
+                      <Image
+                        src="https://archives.bulbagarden.net/media/upload/7/7d/PE_Kanto_Map.png"
+                        alt="Kanto Region Map"
+                        fill
+                        priority
+                        className="object-cover p-2 animate-fade-in"
+                        sizes="(max-width: 1024px) 90vw, 800px"
+                        onError={() => {
+                          soundManager.play("ui-deny");
+                          setMapLoading(true);
+                        }}
+                        onLoad={() => {
+                          soundManager.play("ui-success");
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-scanline opacity-10 pointer-events-none"></div>
+                    </div>
+                  )}
                 </div>
               </div>
               <p className="mt-6 text-sm max-w-lg mx-auto">
-                The Pokémon world map functionality is currently unavailable.
-                Your Pip-Boy is unable to establish a connection with the
-                regional mapping servers.
+                {mapLoading
+                  ? "Your Pip-Boy is establishing a connection with the regional mapping servers..."
+                  : "Kanto region map successfully loaded. Use this map to navigate between cities and discover wild Pokémon habitats."}
               </p>
             </div>
           </div>

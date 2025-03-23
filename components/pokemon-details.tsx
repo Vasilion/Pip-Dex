@@ -1,68 +1,106 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Heart, Shield, Zap, ArrowLeft, ArrowRight } from "lucide-react"
-import type { PokemonType } from "@/types/pokemon"
-import { soundManager } from "@/utils/sound"
+import Image from "next/image";
+import {
+  Heart,
+  Shield,
+  Zap,
+  ArrowLeft,
+  ArrowRight,
+  Volume2,
+} from "lucide-react";
+import type { PokemonType } from "@/types/pokemon";
+import { soundManager } from "@/utils/sound";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface PokemonDetailsProps {
-  pokemon: PokemonType
+  pokemon: PokemonType;
+  allPokemon: PokemonType[];
+  onNavigate: (pokemon: PokemonType) => void;
 }
 
-export default function PokemonDetails({ pokemon }: PokemonDetailsProps) {
-  const [showShiny, setShowShiny] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
+export default function PokemonDetails({
+  pokemon,
+  allPokemon,
+  onNavigate,
+}: PokemonDetailsProps) {
+  const navigateToPokemon = (id: number) => {
+    const nextPokemon = allPokemon.find((p) => p.id === id);
+    if (nextPokemon) {
+      onNavigate(nextPokemon);
+    }
+  };
 
-  // Toggle between normal and shiny sprites with animation
-  const toggleShiny = () => {
-    soundManager.play("ui-click")
-    setIsAnimating(true)
-    setTimeout(() => {
-      setShowShiny(!showShiny)
-      setIsAnimating(false)
-    }, 500)
-  }
-
-  const imageUrl = showShiny ? pokemon.sprites.shiny || pokemon.sprites.front_default : pokemon.sprites.front_default
-
-  const animationUrl = pokemon.sprites.animated || pokemon.sprites.front_default
+  const imageUrl = pokemon.sprites.animated;
 
   const handleImageClick = () => {
-    soundManager.playPokemonCry(pokemon.id)
-  }
+    soundManager.playPokemonCry(pokemon.name);
+  };
+
+  const capitalizeFirstLetter = (str: string) => {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
+  const tooltipContent = `${
+    pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)
+  } - #${pokemon.id.toString().padStart(3, "0")}`;
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-center mb-2">
-        <div
-          className={`w-32 h-32 sm:w-48 sm:h-48 relative bg-emerald-900/20 border-2 border-emerald-500/30 flex items-center justify-center ${isAnimating ? "animate-pulse" : ""} cursor-pointer`}
-          onClick={handleImageClick}
-        >
-          {imageUrl && (
-            <Image
-              src={imageUrl || "/placeholder.svg"}
-              alt={pokemon.name}
-              width={140}
-              height={140}
-              className="pixelated"
-              style={{
-                imageRendering: "pixelated",
-                filter: "brightness(1.2) hue-rotate(120deg) saturate(0.3)",
-              }}
-            />
-          )}
+      <div className="flex flex-col items-center mb-2">
+        <Tooltip.Provider>
+          <Tooltip.Root delayDuration={300}>
+            <Tooltip.Trigger asChild>
+              <div
+                className="w-32 h-32 sm:w-48 sm:h-48 relative bg-emerald-900/20 border-2 border-emerald-500/30 flex items-center justify-center cursor-pointer"
+                onClick={handleImageClick}
+              >
+                {imageUrl && (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <Image
+                      src={imageUrl || "/placeholder.svg"}
+                      alt={pokemon.name}
+                      fill
+                      sizes="(max-width: 640px) 8rem, 12rem"
+                      className="object-contain p-2 pixelated"
+                      priority
+                    />
+                  </div>
+                )}
+              </div>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content
+                className="bg-emerald-900 border border-emerald-500 px-3 py-2 text-xs text-white rounded shadow-md z-50 max-w-xs whitespace-pre-line"
+                sideOffset={5}
+              >
+                {tooltipContent}
+                <Tooltip.Arrow className="fill-emerald-900" />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+
+        <div className="flex items-center mt-2 text-xs text-emerald-500/80">
+          <Volume2 className="h-3 w-3 mr-1" />
+          <span>Click {capitalizeFirstLetter(pokemon.name)} to hear cry!</span>
         </div>
       </div>
 
       <div className="flex justify-between items-center">
         <h3 className="text-xl capitalize">{pokemon.name}</h3>
-        <div className="text-emerald-500/70">#{pokemon.id.toString().padStart(3, "0")}</div>
+        <div className="text-emerald-500/70">
+          #{pokemon.id.toString().padStart(3, "0")}
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
         {pokemon.types.map((type) => (
-          <div key={type} className="px-3 py-1 border border-emerald-500/50 bg-emerald-900/20">
+          <div
+            key={`${type}-${pokemon.id}`}
+            className="px-3 py-1 border border-emerald-500/50 bg-emerald-900/20"
+          >
             {type}
           </div>
         ))}
@@ -91,25 +129,22 @@ export default function PokemonDetails({ pokemon }: PokemonDetailsProps) {
         <div className="text-sm mb-2">
           Height: {pokemon.height / 10}m | Weight: {pokemon.weight / 10}kg
         </div>
-        <p className="text-sm">{pokemon.description || "No description available for this Pokémon."}</p>
+        <p className="text-sm">
+          {pokemon.description || "No description available for this Pokémon."}
+        </p>
       </div>
 
-      <div className="flex justify-between mt-4">
-        <button
-          className="border border-emerald-500 px-4 py-2 hover:bg-emerald-900/30 transition-colors flex items-center"
-          onClick={toggleShiny}
-        >
-          {showShiny ? "Normal" : "Shiny"}
-        </button>
+      <div className="flex justify-end mt-4">
         <div className="flex space-x-2">
           <button
             className="border border-emerald-500 px-3 py-2 hover:bg-emerald-900/30 transition-colors"
             disabled={pokemon.id <= 1}
             onClick={() => {
               if (pokemon.id > 1) {
-                soundManager.play("ui-click")
+                soundManager.play("ui-click");
+                navigateToPokemon(pokemon.id - 1);
               } else {
-                soundManager.play("ui-deny")
+                soundManager.play("ui-deny");
               }
             }}
           >
@@ -120,9 +155,10 @@ export default function PokemonDetails({ pokemon }: PokemonDetailsProps) {
             disabled={pokemon.id >= 151}
             onClick={() => {
               if (pokemon.id < 151) {
-                soundManager.play("ui-click")
+                soundManager.play("ui-click");
+                navigateToPokemon(pokemon.id + 1);
               } else {
-                soundManager.play("ui-deny")
+                soundManager.play("ui-deny");
               }
             }}
           >
@@ -131,6 +167,5 @@ export default function PokemonDetails({ pokemon }: PokemonDetailsProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

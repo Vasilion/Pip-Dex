@@ -5,12 +5,8 @@ class SoundManager {
   private isClient: boolean;
 
   constructor() {
-    // Check if we're in a browser environment
     this.isClient = typeof window !== "undefined";
-
-    // Only preload sounds if in browser
     if (this.isClient) {
-      // Pre-load common sounds
       this.preloadSound("ui-click", "/sounds/pipboy-click.wav");
       this.preloadSound("ui-tab", "/sounds/pipboy-tab.wav");
       this.preloadSound("ui-select", "/sounds/pipboy-select.wav");
@@ -26,15 +22,13 @@ class SoundManager {
     this.sounds.set(id, audio);
   }
 
-  async loadPokemonCry(pokemonId: number): Promise<void> {
+  async loadPokemonCry(pokemonId: string): Promise<void> {
     if (!this.isClient) return;
 
     const id = `pokemon-${pokemonId}`;
 
-    // If already loaded, don't reload
     if (this.sounds.has(id)) return;
 
-    // Use the PokéAPI cry URL format
     const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonId}.mp3`;
 
     try {
@@ -46,7 +40,7 @@ class SoundManager {
     }
   }
 
-  play(id: string): void {
+  play(id: string, volume?: number): void {
     if (!this.isClient || this.muted) return;
 
     const sound = this.sounds.get(id);
@@ -57,24 +51,22 @@ class SoundManager {
 
     // Clone the audio to allow overlapping sounds
     const clone = sound.cloneNode() as HTMLAudioElement;
-    clone.volume = this.volume;
+    clone.volume = volume || this.volume;
     clone.play().catch((err) => console.warn("Error playing sound:", err));
   }
 
-  playPokemonCry(pokemonId: number): void {
+  playPokemonCry(pokemonId: string): void {
     if (!this.isClient || this.muted) return;
 
     const id = `pokemon-${pokemonId}`;
 
-    // If the cry is already loaded, play it
     if (this.sounds.has(id)) {
-      this.play(id);
+      this.play(id, 0.18);
       return;
     }
 
-    // Otherwise, load and play
     this.loadPokemonCry(pokemonId).then(() => {
-      this.play(id);
+      this.play(id, 0.18);
     });
   }
 
@@ -85,7 +77,6 @@ class SoundManager {
   setVolume(volume: number): void {
     this.volume = Math.max(0, Math.min(1, volume));
 
-    // Update volume for all loaded sounds
     if (this.isClient) {
       this.sounds.forEach((sound) => {
         sound.volume = this.volume;
@@ -99,7 +90,6 @@ class SoundManager {
   }
 }
 
-// Create a singleton instance, but ensure it's only created once
 let soundManagerInstance: SoundManager | null = null;
 
 export function getSoundManager(): SoundManager {
@@ -109,6 +99,5 @@ export function getSoundManager(): SoundManager {
   return soundManagerInstance;
 }
 
-// For backward compatibility
 export const soundManager =
   typeof window !== "undefined" ? getSoundManager() : new SoundManager();

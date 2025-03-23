@@ -1,32 +1,33 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import Image from "next/image"
-import type { PokemonType } from "@/types/pokemon"
-import { Heart, Shield, Swords, Zap } from "lucide-react"
-import { soundManager } from "@/utils/sound"
+import { useEffect } from "react";
+import Image from "next/image";
+import type { PokemonType } from "@/types/pokemon";
+import { Heart, Shield, Swords, Zap } from "lucide-react";
+import { soundManager } from "@/utils/sound";
 
 interface PokemonStatsProps {
-  pokemon: PokemonType
-  category: string
+  pokemon: PokemonType;
+  category: string;
 }
 
 export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
-  // Preload the Pokémon cry when viewing stats
   useEffect(() => {
-    soundManager.loadPokemonCry(pokemon.id)
-  }, [pokemon.id])
+    soundManager.loadPokemonCry(pokemon.name);
+  }, [pokemon.name]);
 
   const handlePokemonImageClick = () => {
-    soundManager.playPokemonCry(pokemon.id)
-  }
+    soundManager.playPokemonCry(pokemon.name);
+  };
 
   const renderContent = () => {
     switch (category) {
       case "Base Stats":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl mb-4 capitalize">{pokemon.name}'s Base Stats</h2>
+            <h2 className="text-xl mb-4 capitalize">
+              {pokemon.name}'s Base Stats
+            </h2>
 
             <div className="space-y-4">
               <div>
@@ -40,7 +41,12 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                 <div className="w-full bg-emerald-900/20 h-4 border border-emerald-500/30">
                   <div
                     className="bg-emerald-500 h-full"
-                    style={{ width: `${Math.min(100, (pokemon.stats.hp / 255) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (pokemon.stats.hp / 255) * 100
+                      )}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -56,7 +62,12 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                 <div className="w-full bg-emerald-900/20 h-4 border border-emerald-500/30">
                   <div
                     className="bg-emerald-500 h-full"
-                    style={{ width: `${Math.min(100, (pokemon.stats.attack / 255) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (pokemon.stats.attack / 255) * 100
+                      )}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -72,7 +83,12 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                 <div className="w-full bg-emerald-900/20 h-4 border border-emerald-500/30">
                   <div
                     className="bg-emerald-500 h-full"
-                    style={{ width: `${Math.min(100, (pokemon.stats.defense / 255) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (pokemon.stats.defense / 255) * 100
+                      )}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -88,7 +104,12 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                 <div className="w-full bg-emerald-900/20 h-4 border border-emerald-500/30">
                   <div
                     className="bg-emerald-500 h-full"
-                    style={{ width: `${Math.min(100, (pokemon.stats.specialAttack / 255) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (pokemon.stats.specialAttack / 255) * 100
+                      )}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -104,7 +125,12 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                 <div className="w-full bg-emerald-900/20 h-4 border border-emerald-500/30">
                   <div
                     className="bg-emerald-500 h-full"
-                    style={{ width: `${Math.min(100, (pokemon.stats.specialDefense / 255) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (pokemon.stats.specialDefense / 255) * 100
+                      )}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -120,7 +146,12 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                 <div className="w-full bg-emerald-900/20 h-4 border border-emerald-500/30">
                   <div
                     className="bg-emerald-500 h-full"
-                    style={{ width: `${Math.min(100, (pokemon.stats.speed / 255) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (pokemon.stats.speed / 255) * 100
+                      )}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -128,15 +159,18 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
 
             <div className="mt-6 pt-4 border-t border-emerald-500/30">
               <div className="text-sm">
-                <div className="mb-2">Total: {Object.values(pokemon.stats).reduce((a, b) => a + b, 0)}</div>
+                <div className="mb-2">
+                  Total:{" "}
+                  {Object.values(pokemon.stats).reduce((a, b) => a + b, 0)}
+                </div>
                 <p>
-                  Base stats determine a Pokémon's starting capabilities. These values can increase through leveling up
-                  and evolution.
+                  Base stats determine a Pokémon's starting capabilities. These
+                  values can increase through leveling up and evolution.
                 </p>
               </div>
             </div>
           </div>
-        )
+        );
       case "Evolution":
         return (
           <div className="space-y-6">
@@ -159,29 +193,20 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                           className="pixelated"
                           style={{
                             imageRendering: "pixelated",
-                            filter: "brightness(1.2) hue-rotate(120deg) saturate(0.3)",
+                            filter:
+                              "brightness(1.2) hue-rotate(120deg) saturate(0.3)",
                           }}
                         />
                       )}
                     </div>
                     <div className="capitalize text-center">{stage.name}</div>
-                    <div className="text-xs text-emerald-500/70 mb-4">#{stage.id.toString().padStart(3, "0")}</div>
+                    <div className="text-xs text-emerald-500/70 mb-4">
+                      #{stage.id.toString().padStart(3, "0")}
+                    </div>
 
-                    {index < pokemon.evolutionChain.length - 1 && (
-                      <div className="flex sm:hidden flex-col items-center my-2">
-                        <div className="h-8 w-0.5 bg-emerald-500/50"></div>
-                        <div className="text-xs text-emerald-500/70 my-1">{stage.evolutionDetails || "Level up"}</div>
-                        <div className="h-8 w-0.5 bg-emerald-500/50"></div>
-                      </div>
-                    )}
-
-                    {index < pokemon.evolutionChain.length - 1 && (
-                      <div className="hidden sm:flex items-center mx-2">
-                        <div className="w-8 h-0.5 bg-emerald-500/50"></div>
-                        <div className="text-xs text-emerald-500/70 mx-1">{stage.evolutionDetails || "Level up"}</div>
-                        <div className="w-8 h-0.5 bg-emerald-500/50"></div>
-                      </div>
-                    )}
+                    <div className="text-xs text-emerald-500/70 my-1">
+                      {stage.evolutionDetails}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -191,7 +216,7 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
               </div>
             )}
           </div>
-        )
+        );
       case "Moves":
         return (
           <div className="space-y-6">
@@ -223,11 +248,13 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
               Showing 10 of {pokemon.moves?.length || 0} moves
             </div>
           </div>
-        )
+        );
       case "Abilities":
         return (
           <div className="space-y-6">
-            <h2 className="text-xl mb-4 capitalize">{pokemon.name}'s Abilities</h2>
+            <h2 className="text-xl mb-4 capitalize">
+              {pokemon.name}'s Abilities
+            </h2>
 
             {pokemon.abilities && pokemon.abilities.length > 0 ? (
               <div className="space-y-4">
@@ -238,8 +265,14 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
                     onClick={() => soundManager.play("ui-click")}
                   >
                     <div className="font-bold mb-2">{ability.name}</div>
-                    <p className="text-sm">{ability.description || "No description available."}</p>
-                    {ability.isHidden && <div className="mt-2 text-xs text-emerald-500/70">Hidden Ability</div>}
+                    <p className="text-sm">
+                      {ability.description || "No description available."}
+                    </p>
+                    {ability.isHidden && (
+                      <div className="mt-2 text-xs text-emerald-500/70">
+                        Hidden Ability
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -249,12 +282,11 @@ export default function PokemonStats({ pokemon, category }: PokemonStatsProps) {
               </div>
             )}
           </div>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  return <div className="h-full overflow-y-auto pr-2">{renderContent()}</div>
+  return <div className="h-full overflow-y-auto pr-2">{renderContent()}</div>;
 }
-
