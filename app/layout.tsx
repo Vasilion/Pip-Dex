@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Pip-Dex 3000",
-  description: "A Fallout 3 inspired pokedex.",
+  description: "A Fallout 3 inspired pokedex!",
 };
 
 export default function RootLayout({
